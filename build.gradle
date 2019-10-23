@@ -1,0 +1,102 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'war'
+    id 'maven'
+    id 'idea'
+}
+
+ext {
+    jdkVersion = '1.8'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://repo1.maven.org/maven2/"
+    }
+}
+
+def compileDependencies = [
+    "com.sun.xml.bind:jaxb-impl:2.2.3-1",
+    "javax.ws.rs:javax.ws.rs-api:2.0",
+    "org.apache.commons:commons-lang3:3.0.1",
+    "commons-io:commons-io:2.1",
+    "commons-dbutils:commons-dbutils:1.7",
+    "org.apache.commons:commons-collections4:4.4",
+    "org.glassfish.jersey.core:jersey-client:2.23.1",
+    "org.glassfish.jersey.core:jersey-common:2.23.1",
+    "org.glassfish.jersey.containers:jersey-container-servlet:2.23.1",
+    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.23.1",
+    "org.glassfish.jersey.core:jersey-server:2.23.1",
+    "org.glassfish.jersey.media:jersey-media-jaxb:2.23.1",
+    "org.glassfish.jersey.media:jersey-media-json-jackson:2.23.1",
+    "io.swagger:swagger-jersey2-jaxrs:1.5.9",
+    "org.apache.httpcomponents:httpclient:4.5",
+    "org.apache.httpcomponents:httpcore:4.4.1",
+    "mysql:mysql-connector-java:8.0.17",
+    "org.junit.jupiter:junit-jupiter-api:5.5.0",
+    "org.junit.jupiter:junit-jupiter-engine:5.5.0",
+    "org.junit.platform:junit-platform-runner:1.5.0",
+    "org.mockito:mockito-core:3.1.0"
+]
+
+dependencies {
+    compile compileDependencies
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.5.0')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.5.0')
+    testRuntime('org.junit.platform:junit-platform-runner:1.5.0')
+    testImplementation('org.mockito:mockito-core:3.1.0')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    from("src/main/resources") {
+         include("**/db.properties")
+
+         if (project.hasProperty("replaceHost")) {
+              println('Replacing Host with db')
+              filter(ReplaceTokens, tokens: ['replaceHost':'db'])
+         }
+         else {
+              println('Replacing Host with localhost')
+              filter(ReplaceTokens, tokens: ['replaceHost','localhost'])
+         }
+    }
+}
+
+idea {
+    project {
+        languageLevel = jdkVersion
+        vcs = "Git"
+    }
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+war {
+    baseName 'bob'
+
+    //with {
+    //    from("${rootDir}/src/main/html", {
+    //        into ''
+    //    })
+    //}
+
+    doFirst() {
+        manifest {
+            attributes (
+                'Implementation-Title': 'bob',
+                'Implementation-Version': '1.0',
+                'Implementation-Vendor': 'Moonbase',
+                'Sealed': true
+            )
+        }
+    }
+}

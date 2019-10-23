@@ -1,0 +1,19 @@
+version: '3.5'
+services:
+  web:
+    image: git01.dev.internal:4567/moonbase/ide/bob/deployment/bob:master
+    container_name: bob
+    ports:
+      - '8080:8080'
+  db:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: users
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+   

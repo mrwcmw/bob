@@ -1,0 +1,97 @@
+stages:
+  - builddev
+  - dockerdev
+  - test
+
+bobbuilder:
+  stage: builddev
+  image: gradle:5.6.2-jdk8
+
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+  before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - export GRADLE_HOME=/opt/gradle
+  script: gradle build -PreplaceHost=db --stacktrace
+
+  only:
+    changes:
+      - build.gradle
+      - .gitlab-ci.yml
+      - src/main/resources/**/*
+      - src/main/java/**/*
+
+  artifacts:
+    paths:
+      - build/libs/bob.war
+
+  tags:
+    - 'docker'
+
+bobdockerbuilder:
+  stage: dockerdev
+  image: docker:19.03
+  services: 
+    - docker:dind
+
+  variables:
+    APPLICATION_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/deployments/bob:$CI_COMMIT_REF_NAME"
+    IMAGE_LABELS: >
+      --label dev.gitlab.ci.ref=$CI_BUILD_REF_NAME
+      --label dev.gitlab.ci.build=$CI_PROJECT_URL/builds/$CI_BUILD_ID
+    WARFILE: bob.war
+
+  before_script:
+    - |
+      if [[ -n "$CI_REGISTRY_USER" ]]; then
+        echo "Logging into GitLab..."
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+        echo ""
+      fi 
+  script:
+    - |
+      echo "CI_REGISTRY: $CI_REGISTRY"
+      echo "CI_REGISTRY_IMAGE: $CI_REGISTRY_IMAGE"
+      echo "CI_COMMIT_REF_SLUG: $CI_COMMIT_REF_SLUG"
+      echo "CI_BUILDS_DIR: $CI_BUILDS_DIR"
+      echo "CI_BUILD_REF: $CI_BUILD_REF"
+      echo "CI_REGISTRY_USER: $CI_REGISTRY_USER"
+      echo "CI_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD"
+      echo "CI_REGISTRY: $CI_REGISTRY"
+
+      docker build -t ${APPLICATION_IMAGE_NAME} -f ./src/main/resources/Dockerfile --build-arg WARFILE=${WARFILE} ${IMAGE_LABELS} .
+      docker push ${APPLICATION_IMAGE_NAME}
+
+  only:
+    changes:
+      - build.gradle
+      - .gitlab-ci.yml
+      - src/main/resources/Dockerfile
+      - src/main/resources/docker-compose.yml
+      - src/main/java/**/*
+
+  tags:
+    - 'docker'
+
+bobtest:
+  stage: test
+
+  variables:
+    APPLICATION_IMAGE_NAME: "${CI_REGISTRY_IMAGE}/deployments/bob:$CI_COMMIT_REF_NAME"
+
+  before_script:
+    - |
+      if [[ -n "$CI_REGISTRY_USER" ]]; then
+        echo "Logging into GitLab..."
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+        echo ""
+      fi 
+
+  script: 
+    - |
+      docker pull ${APPLICATION_IMAGE_NAME}
+      docker run -d -p 8080:8080 ${APPLICATION_IMAGE_NAME}
+
+  tags:
+    - 'docker'

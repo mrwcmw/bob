@@ -1,0 +1,74 @@
+[
+        {
+            "source": tipper,
+            "poc": poc,
+            "tag": tag,
+            "classification": classification,
+            "classified_by": "jimbob123",
+            "declassify_on": "2050-01-01",
+            "start_time": now_formatted,
+            "end_time": tomorrow_formatted,
+            "delivery_expiration_time": tomorrow_formatted,
+            "justification": justification,
+            "label": label,
+            "tod_start": [
+                [
+                    "15:00",
+                    "18:00"
+                ]
+            ],
+            "collectors": [
+            ],
+            "notification_options": [
+                {}
+            ],
+            "params": {
+                "sig_tip": {
+                    "location": "POINT(47.51 97.10)",
+                    "airport_icao": "KGFK",
+                    "min_rf_mhz": 400,
+                    "max_rf_mhz": 600,
+                    "min_bw_mhz": 0.0125,
+                    "min_dur": 10,
+                    "max_dur": 120,
+                    "polarity": "any"
+                }
+            }
+        },
+        {
+            "source": tipper,
+            "poc": poc,
+            "tag": tag,
+            "classification": classification,
+            "classified_by": "jimbob123",
+            "declassify_on": "2050-01-01",
+            "start_time": now_formatted,
+            "end_time": tomorrow_formatted,
+            "delivery_expiration_time": tomorrow_formatted,
+            "justification": justification,
+            "label": label,
+            "tod_start": [
+                [
+                    "15:00",
+                    "18:00"
+                ]
+            ],
+            "collectors": [
+            ],
+            "notification_options": [
+                {}
+            ],
+            "params": {
+                "sig_tip": {
+                    "location": "POINT(8.51 5.10)",
+                    "airport_icao": "KGFK",
+                    "min_rf_mhz": 400,
+                    "max_rf_mhz": 600,
+                    "min_bw_mhz": 0.0125,
+                    "min_dur": 10,
+                    "max_dur": 120,
+                    "polarity": "any"
+                }
+            }
+        }
+    ]
